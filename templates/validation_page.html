@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Validation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Mengatur lebar kolom */
+        th:nth-child(1), td:nth-child(1) { width: 10%; } /* Instansi */
+        th:nth-child(2), td:nth-child(2) { width: 15%; } /* Nama Dokumen */
+        th:nth-child(3), td:nth-child(3) { width: 15%; } /* Nama Paket */
+        th:nth-child(4), td:nth-child(4) { width: 10%; } /* Uploader */
+        th:nth-child(5), td:nth-child(5) { width: 20%; } /* Validasi Balai */
+        th:nth-child(6), td:nth-child(6) { width: 20%; } /* Validasi Kompetensi */
+        th:nth-child(7), td:nth-child(7) { width: 20%; } /* Validasi KI */
+        th:nth-child(8), td:nth-child(8) { width: 15%; } /* Aksi */
+
+        /* Mengatur tampilan token */
+        .token {
+            display: block; /* Membuat token dalam blok agar menyesuaikan lebar */
+            max-width: 100%; /* Sesuai dengan lebar kolom */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal; /* Memastikan teks turun ke baris baru */
+        }
+
+        /* Hover tetap memberikan efek */
+        .token:hover {
+            max-width: 100%; /* Tetap penuh saat di-hover */
+        }
+        
+        /* .token {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: inline-block;
+        }
+
+        .token:hover {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+            background-color: #f9f9f9;
+            z-index: 1;
+            position: relative;
+        } */
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 30%;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover, .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Mengatur lebar kolom agar teks tidak keluar dari batas */
+        td, th {
+            word-wrap: break-word;
+            max-width: 300px; /* Sesuaikan lebar maksimum */
+            overflow-wrap: break-word;
+            white-space: normal; /* Memungkinkan teks turun ke baris berikutnya */
+        }
+    </style>
+</head>
+<body>
+    {% include 'includes/_navbar.html' %}
+
+    <div class="container mt-4">
+        <h2>Validasi Dokumen</h2>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Instansi</th>
+                        <th>Nama Dokumen</th>
+                        <th>Nama Paket</th>
+                        <th>Uploader</th>
+                        <th>Token Balai</th>
+                        <th>Token Kompetensi</th>
+                        <th>Token KI</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for document in documents %}
+                    <tr>
+                        <td>{{ document.get('instansi', 'Tidak Diketahui') }}</td>
+                        <td>{{ document.get('document_name', 'Tidak Ada Nama') }}</td>
+                        <td>{{ document.get('project_name', 'Tidak Ada Paket') }}</td>
+                        <td>{{ document.get('uploader', 'Tidak Diketahui') }}</td>
+                        <td>
+                            <div class="token" title="{{ document.get('balai_token', 'Belum Divalidasi') }}">
+                                {{ document.get('balai_token', 'Belum Divalidasi') }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="token" title="{{ document.get('kompetensi_token', 'Belum Divalidasi') }}">
+                                {{ document.get('kompetensi_token', 'Belum Divalidasi') }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="token" title="{{ document.get('ki_token', 'Belum Divalidasi') }}">
+                                {{ document.get('ki_token', 'Belum Divalidasi') }}
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('view_file', file_id=document['document_id']) }}" target="_blank" class="btn btn-info btn-sm">Lihat</a>
+
+                            {% if session['role'] == 'validator ki' and document.get('ki_token') %}
+                                <button class="btn btn-secondary btn-sm" disabled>Sudah Divalidasi</button>
+                            {% elif session['role'] == 'validator kompetensi' and document.get('kompetensi_token') %}
+                                <button class="btn btn-secondary btn-sm" disabled>Sudah Divalidasi</button>
+                            {% elif session['role'] == 'validator balai' and document.get('balai_token') %}
+                                <button class="btn btn-secondary btn-sm" disabled>Sudah Divalidasi</button>
+                            {% elif session['role'] in ['validator ki', 'validator kompetensi', 'validator balai'] %}
+                                <button class="btn btn-primary btn-sm" onclick="showValidationModal('{{ document.document_id|string }}')">Validasi</button>
+                            {% else %}
+                                <button class="btn btn-secondary btn-sm" disabled>Validasi</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Validasi -->
+    <div id="validationModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeValidationModal()">&times;</span>
+            <h2>Validasi Dokumen</h2>
+            <p>Apakah Anda ingin menandai dokumen ini sebagai Valid atau Tidak Valid?</p>
+            <form id="validationForm" method="post">
+                <input type="hidden" name="file_id" id="file_id">
+                <button type="submit" class="btn btn-success" name="status" value="valid">✅ Valid</button>
+                <button type="submit" class="btn btn-danger" name="status" value="invalid">❌ Tidak Valid</button>
+                <button type="button" class="btn btn-secondary" onclick="closeValidationModal()">❌ Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Modal -->
+    <script>
+    function showValidationModal(fileId) {
+        document.getElementById('file_id').value = fileId;
+        document.getElementById('validationForm').action = "/validate/" + fileId;
+        document.getElementById('validationModal').style.display = 'block';
+    }
+
+    function closeValidationModal() {
+        document.getElementById('validationModal').style.display = 'none';
+    }
+    </script>
+
+    <!-- Bootstrap JS (Opsional, untuk navbar toggler) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

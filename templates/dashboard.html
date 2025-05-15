@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .btn-secondary {
+            background-color: #033d21;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 15%;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: #015f2a;
+        }
+    </style>
+</head>
+<body>
+    {% include 'includes/_navbar.html' %}
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <h1>Welcome back, {{ session.get('name') }}</h1>
+        <button class="btn btn-secondary mb-3" data-bs-toggle="modal" data-bs-target="#syncModal">🔄 Sync Ledger</button>
+
+        <!-- PoA Chain Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Proof of Authority (PoA) Chain</h3>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Block Number</th>
+                            <th>Hash</th>
+                            <th>Previous Hash</th>
+                            <th>Document Name</th>
+                            <th>Document Hash</th>
+                        </tr>
+                    </thead>
+                    <tbody id="poa-chain-table">
+                        <!-- Data akan diisi oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PoW Chain Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Proof of Work (PoW) Chain</h3>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Block Number</th>
+                            <th>Hash</th>
+                            <th>Previous Hash</th>
+                            <th>Nonce</th>
+                            <th>Document Name</th>
+                            <th>Document Hash</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pow-chain-table">
+                        <!-- Data akan diisi oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sinkronisasi Ledger -->
+    <div class="modal fade" id="syncModal" tabindex="-1" aria-labelledby="syncModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="syncModalLabel">Proses Sinkronisasi Ledger</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div id="syncStatus">
+                <p>⏳ Menunggu proses sinkronisasi dimulai...</p>
+              </div>
+              <pre id="syncLog" class="bg-light p-3 rounded" style="max-height: 300px; overflow-y: auto;"></pre>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-success" data-bs-dismiss="modal">Tutup</button>
+              <button type="button" class="btn btn-success" id="startSync">Mulai Sinkronisasi</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- JavaScript untuk mengambil data chain secara berkala -->
+    <script>
+        function fetchChains() {
+            // Ambil data PoA Chain
+            fetch('/poa_chain')
+                .then(response => response.json())
+                .then(data => {
+                    const poaTableBody = document.querySelector('#poa-chain-table');
+                    poaTableBody.innerHTML = ''; // Kosongkan tabel sebelum mengisi ulang
+
+                    data.chain.forEach(block => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${block[0]}</td>
+                            <td>${block[1]}</td>
+                            <td>${block[2]}</td>
+                            <td>${block[4]}</td>
+                            <td>${block[6]}</td>
+                        `;
+                        poaTableBody.appendChild(row);
+                    });
+                });
+
+            // Ambil data PoW Chain
+            fetch('/pow_chain')
+                .then(response => response.json())
+                .then(data => {
+                    const powTableBody = document.querySelector('#pow-chain-table');
+                    powTableBody.innerHTML = ''; // Kosongkan tabel sebelum mengisi ulang
+
+                    data.chain.forEach(block => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${block[0]}</td>
+                            <td>${block[1]}</td>
+                            <td>${block[2]}</td>
+                            <td>${block[4]}</td>
+                            <td>${block[6]}</td>
+                            <td>${block[8]}</td>
+                        `;
+                        powTableBody.appendChild(row);
+                    });
+                });
+        }
+
+        document.getElementById('startSync').addEventListener('click', function () {
+            const logBox = document.getElementById('syncLog');
+            const status = document.getElementById('syncStatus');
+
+            status.innerHTML = '<p>🔄 Sinkronisasi sedang berlangsung...</p>';
+            logBox.innerHTML = '';
+
+            fetch('/manual_sync', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    status.innerHTML = '<p class="text-success">✅ Sinkronisasi selesai.</p>';
+                    logBox.innerHTML = data.log.join('\n');
+                    fetchChains();
+                })
+                .catch(err => {
+                    status.innerHTML = '<p class="text-danger">❌ Terjadi kesalahan saat sinkronisasi.</p>';
+                    logBox.textContent = err.toString();
+                });
+        });
+
+        // Ambil data chain setiap 5 detik
+        setInterval(fetchChains, 5000);
+        // Ambil data chain saat halaman pertama kali dimuat
+        fetchChains();
+    </script>
+
+    <!-- Bootstrap JS (Opsional, untuk navbar toggler) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

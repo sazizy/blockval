@@ -1,0 +1,47 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="../static/images/pu-logo.png" alt="Logo" style="height: 40px; margin-right: 10px;">
+            <span>BLOCKVAL</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <!-- Menu Kelola Akun: Hanya untuk Admin -->
+                {% if session['role'] == 'admin' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('account_setting') }}">Kelola Akun</a>
+                </li>
+                {% endif %}
+
+                <!-- Menu Upload Dokumen: Hanya untuk Uploader -->
+                {% if session['role'] == 'uploader' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('upload_document') }}">Upload Dokumen</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('document_management') }}">Kelola Dokumen</a>
+                </li>
+                {% endif %}
+
+                <!-- Menu Validasi Dokumen: Hanya untuk Validator -->
+                {% if session['role'] in ['validator ki', 'validator balai', 'validator kompetensi'] %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('validasi_dokumen') }}">Validasi Dokumen</a>
+                </li>
+                {% endif %}
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('token_decoder') }}">Token Decoder</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

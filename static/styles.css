@@ -1,0 +1,255 @@
+/* General Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+h1, h2 {
+    color: #3e3e3e;
+}
+
+h3 {
+    color: whitesmoke;
+}
+
+.logo {
+    max-width: 100px; /* Perkecil ukuran logo */
+    height: auto;
+}
+
+.login-container p {
+    max-width: 450px; /* Batasi lebar paragraf agar tidak melebar */
+    font-size: 13px;
+    margin: 0 auto; /* Pusatkan teks */
+    text-align: center;
+}
+
+.register-container p {
+    max-width: 450px; /* Batasi lebar paragraf agar tidak melebar */
+    font-size: 13px;
+    margin: 0 auto; /* Pusatkan teks */
+    text-align: center;
+}
+
+.error-message {
+    color: red;
+    font-size: 12px;
+    text-align: left;
+}
+
+/* Navbar Styling */
+.navbar {
+    padding: 10px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    color: black !important;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.navbar-light .navbar-nav .nav-link {
+    color: black !important;
+    font-size: 16px;
+    margin: 0 10px;
+}
+
+.navbar-light .navbar-nav .nav-link:hover {
+    color: grey !important;
+}
+
+/* Card Styling */
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #3e3e3e;
+    color: white;
+    padding: 15px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    table-layout: fixed; /* Agar kolom tidak melebar */
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    word-wrap: break-word; /* Membungkus teks yang panjang */
+}
+
+th {
+    background-color: #3e3e3e;
+    color: white;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar-nav {
+        text-align: center;
+    }
+
+    .navbar-nav .nav-link {
+        margin: 5px 0;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+/* =============================================== */
+/* Tambahan Style untuk upload_document.html */
+/* =============================================== */
+
+/* Container untuk form upload */
+.upload-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Judul form upload */
+.upload-title {
+    text-align: center;
+    color: #3e3e3e;
+    margin-bottom: 20px;
+}
+
+/* Grup form */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Label form */
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+/* Input text dan file */
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #f9f9f9;
+}
+
+.form-control:focus {
+    border-color: #3e3e3e;
+    outline: none;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+/* Tombol submit */
+.btn-primary {
+    background-color: #3e3e3e;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #797878;
+}
+
+.btn-suubmit {
+    background-color: #3e3e3e;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.btn-submit:hover {
+    background-color: #797878;
+}
+
+/* Style khusus untuk input file */
+input[type="file"].form-control {
+    padding: 8px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Pesan flash */
+.alert {
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}

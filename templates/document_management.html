@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Management</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    {% include 'includes/_navbar.html' %}
+
+    <div class="container mt-4">
+        <h2>Kelola Dokumen</h2>
+
+        <!-- <h3>Daftar Dokumen Anda</h3> -->
+        <!-- <div class="container token-decoder-container"> -->
+        <div class="card">
+            <div class="card-header">
+                Daftar Dokumen Anda
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nama Dokumen</th>
+                                <th>Nama Paket</th>
+                                <th>Status Validasi</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for document in documents %}
+                            <tr>
+                                <td>{{ document['document_name'] }}</td>
+                                <td>{{ document['project_name'] }}</td>
+                                <td>
+                                    {% if document['isValid'] == 'true' %}
+                                        ✅ Valid (Masuk Blockchain)
+                                    {% elif document['isValid'] == 'false' %}
+                                        ❌ Tidak Valid (Tidak Masuk Blockchain)
+                                    {% elif document['isValid'] == 'none' or document['token_balai'] != '' or document['token_kompetensi'] != '' or document['token_ki'] != '' %}
+                                        ⏳ Sedang Proses Validasi
+                                    {% else %}
+                                        ⏳ Belum Divalidasi
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if document['isValid'] == 'none' and not document.get('balai_token') and not document.get('kompetensi_token') and not document.get('ki_token') %}
+                                        <form action="{{ url_for('delete_document', file_id=document['document_id']) }}" method="post" style="display:inline;">
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus dokumen ini?')">Hapus</button>
+                                        </form>
+                                    {% else %}
+                                        <button class="btn btn-secondary btn-sm" title="Dokumen sudah atau sedang proses validasi. Tidak bisa dihapus." disabled>Hapus</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- <br><br> -->
+
+        <!-- <h3>Daftar Dokumen Valid</h3> -->
+        <div class="card">
+            <div class="card-header">
+                Daftar Dokumen Valid
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nama Dokumen</th>
+                                <th>Nama Paket</th>
+                                <th>Token Balai</th>
+                                <th>Token Kompetensi</th>
+                                <th>Token KI</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for valid_doc in valid_docs %}
+                            <tr>
+                                <td>{{ valid_doc['document_name'] }}</td>
+                                <td>{{ valid_doc['project_name'] }}</td>
+                                <td>{{ valid_doc['balai_token'] }}</td>
+                                <td>{{ valid_doc['kompetensi_token'] }}</td>
+                                <td>{{ valid_doc['ki_token'] }}</td>
+                                <td>
+                                    <a href="{{ url_for('view_file', file_id=valid_doc['document_id']) }}" target="_blank" class="btn btn-info btn-sm">Lihat</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
