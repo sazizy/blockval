@@ -752,8 +752,6 @@ def proof_of_authority(document):
     Menambahkan blok ke ledger POA setelah dokumen divalidasi oleh semua validator.
     """
     try:
-        start_time = time.time()
-        psutil.cpu_percent(interval=None)
         
         # 🔹 Ambil Previous Block dari ledger_poa
         previous_block = ledger_poa.fetch_last('ledger_poa')
@@ -775,6 +773,9 @@ def proof_of_authority(document):
         balai_data = decode_token(balai_token) if balai_token and balai_token != "invalid" else {}
         kompetensi_data = decode_token(kompetensi_token) if kompetensi_token and kompetensi_token != "invalid" else {}
         ki_data = decode_token(ki_token) if ki_token and ki_token != "invalid" else {}
+        
+        psutil.cpu_percent(interval=None)
+        start_time = time.time()
 
         # 🔹 Hitung hash blok baru dengan `updatehash()`
         hash_current_block = updatehash(
@@ -811,6 +812,8 @@ def proof_of_authority(document):
             ki_data.get('validator_name', ''), ki_data.get('mac_address', ''), ki_data.get('location', ''),
             ki_data.get('timestamp', ''), ki_token
         ]
+        time.sleep(0.2)
+        cpu_usage = psutil.cpu_percent(interval=None)
 
         ledger_poa.insert_record('ledger_poa', new_block)
         # print(f"✅ Blok PoA #{block_number} ditambahkan!")
@@ -827,20 +830,17 @@ def proof_of_authority(document):
         # 🔄 **Broadcast hanya blok terbaru**
         broadcast_new_poa_block(new_block)
 
-        time.sleep(0.2)
-        cpu_percent = psutil.cpu_percent(interval=None)
-
         end_time = time.time()
         duration_poa = end_time - start_time
-        # ✅ SIMPAN HASIL PENGUJIAN ke file PoA_block_creation_time.csv
-        file_path = "PoA_block_creation_time.csv"
+        # ✅ SIMPAN HASIL PENGUJIAN ke file PoA_block_creation.csv
+        file_path = "PoA_block_creation.csv"
         file_exists = os.path.exists(file_path)
         with open(file_path, "a", newline="") as f:
             writer = csv.writer(f)
             if not file_exists:
                 writer.writerow(["duration", "block_number", "CPU Usage", "IP"])
             writer.writerow([
-                duration_poa, block_number, cpu_percent, node_address
+                duration_poa, block_number, cpu_usage, node_address
             ])
 
         return True
@@ -1007,6 +1007,8 @@ def validate_candidate_block():
     try:
         if not block or len(block) < 26:
             return jsonify({"valid": False})
+        
+        psutil.cpu_percent(interval=None)
 
         nonce = block[4]
         block_data = block[0:1] + block[2:4] + block[5:]  # Skip current_block[1] (hash) dan current_block[1] (nonce)
@@ -1026,6 +1028,19 @@ def validate_candidate_block():
         if existing:
             print(f"⛔ Blok #{block[0]} sudah ada. NODE {node_address} menyatakan blok-{block[0]} pada pow ledger tidak valid")
             return jsonify({"valid": False})
+        
+        time.sleep(0.2)
+        cpu_usage = psutil.cpu_percent(interval=None)
+        # ✅ SIMPAN HASIL PENGUJIAN ke file PoW_validate_block.csv
+        file_path = "PoW_Validate_Block.csv"
+        file_exists = os.path.exists(file_path)
+        with open(file_path, "a", newline="") as f:
+            writer = csv.writer(f)
+            if not file_exists:
+                writer.writerow(["block_number", "CPU Usage", "IP"])
+            writer.writerow([
+                block[0], cpu_usage, node_address
+            ])
 
         # print(f"✅ NODE {node_address} menyatakan blok-{block[0]} pada pow ledger valid")
         return jsonify({"valid": True})
@@ -1051,19 +1066,19 @@ def finalize_pow_block():
 
         ledger_pow.insert_record("ledger_pow", block)
         print(f"✅ Blok #{block[0]} ditambahkan dari finalisasi master")
-        end_pow_time = time.time()
-        duration = end_pow_time - start_pow_time
+        # end_pow_time = time.time()
+        # duration = end_pow_time - start_pow_time
 
-        # ✅ SIMPAN HASIL PENGUJIAN ke file PoW_block_creation_time.csv
-        file_path = "PoW_block_creation_time.csv"
-        file_exists = os.path.exists(file_path)
-        with open(file_path, "a", newline="") as f:
-            writer = csv.writer(f)
-            if not file_exists:
-                writer.writerow(["Duration", "block_number", "IP"])
-            writer.writerow([
-                duration, block[0], node_address
-            ])
+        # # ✅ SIMPAN HASIL PENGUJIAN ke file PoW_block_creation_time.csv
+        # file_path = "PoW_block_creation_time.csv"
+        # file_exists = os.path.exists(file_path)
+        # with open(file_path, "a", newline="") as f:
+        #     writer = csv.writer(f)
+        #     if not file_exists:
+        #         writer.writerow(["Duration", "block_number", "IP"])
+        #     writer.writerow([
+        #         duration, block[0], node_address
+        #     ])
 
         return jsonify({"message": "Disimpan"})
 
@@ -1076,6 +1091,7 @@ def start_mining_pow():
     Jika menemukan blok baru, mengirim hasil mining ke seluruh node untuk validasi.
     """
     global mining_in_progress, start_pow_time
+    
 
     if mining_in_progress:
         print("⛔ Mining sudah berjalan, abaikan permintaan.")
@@ -1126,8 +1142,12 @@ def start_mining_pow():
             last_poa_block[21], # KI Token
             node_address,  # Miner
             time_mining  #Mining Timestamp
-        ]        
-        nonce, pow_block_hash = proof_of_work(block_data) #proof_of_work Search Nonce and block hash
+        ]
+        
+        psutil.cpu_percent(interval=None)
+        start_time = time.time()
+
+        nonce, pow_block_hash = proof_of_work(block_data) #proof_of_work Search Nonce and block hash        
 
         # print(f"✅⚠️ TEPAT SEBELUM PROSES: last_poa_block yang akan menjadi new_pow_block adalah blok ke-{last_poa_block[0]} --Method Start Mining PoW--")
         new_pow_block = [
@@ -1159,6 +1179,21 @@ def start_mining_pow():
             time_mining  #Mining Timestamp
         ]
 
+        time.sleep(0.2)
+        cpu_usage = psutil.cpu_percent(interval=None) 
+        end_time = time.time()
+        duration_pow = end_time - start_time
+        # ✅ SIMPAN HASIL PENGUJIAN ke file PoW_block_creation.csv
+        file_path = "PoW_block_creation.csv"
+        file_exists = os.path.exists(file_path)
+        with open(file_path, "a", newline="") as f:
+            writer = csv.writer(f)
+            if not file_exists:
+                writer.writerow(["block_number", "duration", "CPU Usage", "IP"])
+            writer.writerow([
+                new_pow_block[0], duration_pow, cpu_usage, node_address
+            ])
+
         # print(f"✅⚠️ DIDALAM PROSES: NEW POW BLOCK  -> Blok ke-{new_pow_block[0]} --Method Start Mining PoW--")
 
         # 🚨 **Cek ulang apakah ada blok PoW sebelum menyimpan**
@@ -1167,24 +1202,24 @@ def start_mining_pow():
             mining_in_progress = False
             return
         
-        psutil.cpu_percent(interval=None)
+        # psutil.cpu_percent(interval=None)
         if is_valid_ledger('pow'):
             # ✅ **Langsung tambahkan blok PoW ke ledger_pow sendiri**
             mining_in_progress = False
             # print(f"✅⚠️ Dari {node_address} mengirimkan blok PoW ke-{new_pow_block[0]} --Method Start Mining PoW--")
 
-            time.sleep(0.2)
-            cpu_usage = psutil.cpu_percent(interval=None)
-            # ✅ SIMPAN HASIL PENGUJIAN ke file PoA_block_creation_time.csv
-            file_path = "PoW_CPU_Usage.csv"
-            file_exists = os.path.exists(file_path)
-            with open(file_path, "a", newline="") as f:
-                writer = csv.writer(f)
-                if not file_exists:
-                    writer.writerow(["block_number", "CPU Usage", "IP"])
-                writer.writerow([
-                    new_pow_block[0], cpu_usage, node_address
-                ])
+            # time.sleep(0.2)
+            # cpu_usage = psutil.cpu_percent(interval=None)
+            # # ✅ SIMPAN HASIL PENGUJIAN ke file PoW_CPU_Usage.csv
+            # file_path = "PoW_CPU_Usage.csv"
+            # file_exists = os.path.exists(file_path)
+            # with open(file_path, "a", newline="") as f:
+            #     writer = csv.writer(f)
+            #     if not file_exists:
+            #         writer.writerow(["block_number", "CPU Usage", "IP"])
+            #     writer.writerow([
+            #         new_pow_block[0], cpu_usage, node_address
+            #     ])
 
             submit_pow_result_to_master(new_pow_block)
         else:
@@ -2198,7 +2233,7 @@ def test_syncronize_time():
 
         durasi, jumlah_rusak, sukses = synchronize_ledger()
 
-        # ✅ SIMPAN HASIL PENGUJIAN ke file PoA_block_creation_time.csv
+        # ✅ SIMPAN HASIL PENGUJIAN ke file resolve_block_tempering_time.csv
         file_path = "resolve_block_tempering_time.csv"
         file_exists = os.path.exists(file_path)
         status = "Success" if sukses == True else "Failed"

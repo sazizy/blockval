@@ -711,6 +711,9 @@ def proof_of_authority(document):
         kompetensi_data = decode_token(kompetensi_token) if kompetensi_token and kompetensi_token != "invalid" else {}
         ki_data = decode_token(ki_token) if ki_token and ki_token != "invalid" else {}
 
+        psutil.cpu_percent(interval=None)
+        start_time = time.time()
+
         # 🔹 Hitung hash blok baru dengan `updatehash()`
         hash_current_block = updatehash(
             block_number,
@@ -746,6 +749,8 @@ def proof_of_authority(document):
             ki_data.get('validator_name', ''), ki_data.get('mac_address', ''), ki_data.get('location', ''),
             ki_data.get('timestamp', ''), ki_token
         ]
+        time.sleep(0.2)
+        cpu_usage = psutil.cpu_percent(interval=None)
 
         ledger_poa.insert_record('ledger_poa', new_block)
         # print(f"✅ Blok PoA #{block_number} ditambahkan!")
@@ -762,15 +767,15 @@ def proof_of_authority(document):
 
         end_time = time.time()
         duration_poa = end_time - start_time
-        # ✅ SIMPAN HASIL PENGUJIAN ke file PoA_block_creation_time.csv
-        file_path = "PoA_block_creation_timev2.csv"
+        # ✅ SIMPAN HASIL PENGUJIAN ke file PoA_block_creationV2.csv
+        file_path = "PoA_block_creationV2.csv"
         file_exists = os.path.exists(file_path)
         with open(file_path, "a", newline="") as f:
             writer = csv.writer(f)
             if not file_exists:
-                writer.writerow(["duration", "block_number", "IP"])
+                writer.writerow(["duration", "block_number", "CPU Usage", "IP"])
             writer.writerow([
-                duration_poa, block_number, node_address
+                duration_poa, block_number, cpu_usage, node_address
             ])
 
         return True
