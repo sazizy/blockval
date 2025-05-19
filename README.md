@@ -51,5 +51,4 @@ Not intended for production or commercial deployment.
 ## 👤 Author
 Shibron Arby Azizy
 📧 shibronazizy@gmail.com
-🔗 GitHub Profile
 📍 Indonesia
