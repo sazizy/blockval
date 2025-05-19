@@ -16,8 +16,15 @@
 
 ## 🚀 Getting Started
 
-### 1. Clone the Repository
-
-```bash
+# 1. Clone the repository
 git clone https://github.com/sazizy/blockval.git
 cd blockval
+
+# 2. Install dependencies (manual)
+pip install -r requirements.txt
+
+# 3. Run master node
+python app.py --port 5000 --address http://192.168.x.x:5000 --master 
+
+# 4. Run validator/uploader node
+python app.py --port 5001 --address http://192.168.x.x:5000
