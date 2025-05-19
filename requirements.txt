@@ -5,5 +5,5 @@ passlib
 fpdf
 PyMuPDF
 psutil
-requests
 qrcode
+requests
